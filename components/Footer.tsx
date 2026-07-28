@@ -51,7 +51,7 @@ export default function Footer() {
             <img
               src="/images/logo.png"
               alt="Santerra Negocios Inmobiliarios"
-              className="h-14 w-auto"
+              className="h-16 w-auto"
               style={{ filter: LOGO_GLOW }}
             />
             <p className="mt-6 text-sm text-white/60 max-w-xs">

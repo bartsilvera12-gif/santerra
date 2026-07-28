@@ -46,7 +46,7 @@ export default function Header({ forceSolid = false }: { forceSolid?: boolean })
           <img
             src="/images/logo.png"
             alt="Santerra Negocios Inmobiliarios"
-            className="h-12 md:h-16 w-auto transition-[filter] duration-500 ease-santerra"
+            className="h-14 md:h-20 w-auto transition-[filter] duration-500 ease-santerra"
             style={{ filter: scrolled ? "none" : LOGO_GLOW }}
           />
         </Link>
