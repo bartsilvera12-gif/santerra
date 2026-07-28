@@ -70,18 +70,6 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-
-            <div className="mt-6 text-[11px] tracking-[0.18em] uppercase text-white/30">
-              Desarrollado por{" "}
-              <a
-                href="https://neura.com.py"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/50 hover:text-santerra-red transition"
-              >
-                Neura
-              </a>
-            </div>
           </motion.div>
 
           <motion.div variants={fadeUp}>
@@ -121,6 +109,18 @@ export default function Footer() {
             <span>© {new Date().getFullYear()} Santerra Negocios Inmobiliarios</span>
             <a href="/politica-de-privacidad" className="hover:text-santerra-red transition">
               Política de privacidad
+            </a>
+          </div>
+
+          <div className="text-white/30">
+            Desarrollado por{" "}
+            <a
+              href="https://neura.com.py"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-santerra-red transition"
+            >
+              Neura
             </a>
           </div>
         </div>
