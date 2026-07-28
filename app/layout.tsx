@@ -25,7 +25,12 @@ export const metadata: Metadata = {
     "departamentos",
     "terrenos",
     "inversión inmobiliaria"
-  ]
+  ],
+  icons: {
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    shortcut: "/favicon.png",
+    apple: "/favicon.png"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
