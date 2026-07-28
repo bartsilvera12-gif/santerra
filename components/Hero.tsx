@@ -59,30 +59,20 @@ export default function Hero() {
           variants={stagger(0.15, 0.35)}
           initial="hidden"
           animate="visible"
-          className="max-w-2xl"
+          className="max-w-4xl"
         >
           <motion.h1
             variants={fadeUp}
-            className="section-title text-white text-[44px] leading-[1.02] md:text-[76px] md:leading-[0.98] tracking-[-0.01em] font-bold"
+            className="section-title text-white text-[34px] leading-[1.08] md:text-[60px] md:leading-[1.04] tracking-[-0.01em] font-bold"
           >
-            TU INVERSIÓN,
+            ENCONTRÁ EL LUGAR IDEAL
             <br />
-            NUESTRO
-            <br />
-            COMPROMISO.
+            PARA VIVIR O INVERTIR
           </motion.h1>
 
           <motion.div variants={fadeUp} className="flex items-center gap-3 mt-8">
             <div className="w-10 h-[2px] bg-santerra-red" />
           </motion.div>
-
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 text-white/90 text-lg md:text-2xl font-light max-w-lg"
-          >
-            Encontrá el lugar ideal
-            <br className="hidden sm:block" /> para vivir o invertir
-          </motion.p>
         </motion.div>
 
         {/* Search bar */}
