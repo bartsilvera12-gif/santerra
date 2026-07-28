@@ -37,7 +37,7 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="bg-santerra-black text-white/80 pt-16 pb-10">
+    <footer id="site-footer" className="bg-santerra-black text-white/80 pt-16 pb-10">
       <div className="max-w-[1320px] mx-auto px-5 md:px-10">
         <motion.div
           initial="hidden"
