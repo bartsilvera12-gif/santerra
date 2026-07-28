@@ -12,7 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/inversiones",
     "/servicios",
     "/vender",
-    "/contacto"
+    "/contacto",
+    "/politica-de-privacidad"
   ].map((path) => ({
     url: `${BASE}${path}`,
     lastModified: now,

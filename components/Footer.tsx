@@ -58,12 +58,29 @@ export default function Footer() {
         </motion.div>
 
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] tracking-[0.18em] uppercase text-white/40">
-          <div>© {new Date().getFullYear()} Santerra Negocios Inmobiliarios</div>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center">
+            <span>© {new Date().getFullYear()} Santerra Negocios Inmobiliarios</span>
+            <a href="/politica-de-privacidad" className="hover:text-santerra-red transition">
+              Política de privacidad
+            </a>
+          </div>
           <div className="flex gap-6">
             <a href="#" className="hover:text-santerra-red transition">Instagram</a>
             <a href="#" className="hover:text-santerra-red transition">Facebook</a>
             <a href="#" className="hover:text-santerra-red transition">LinkedIn</a>
           </div>
+        </div>
+
+        <div className="pt-6 text-center text-[11px] tracking-[0.18em] uppercase text-white/30">
+          Desarrollado por{" "}
+          <a
+            href="https://neura.com.py"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/50 hover:text-santerra-red transition"
+          >
+            Neura
+          </a>
         </div>
       </div>
     </footer>
