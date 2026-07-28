@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 
+// resplandor suave que sigue el contorno del logo, para que la version a
+// color se lea sobre el hero oscuro sin recuadro ni mancha detras
+export const LOGO_GLOW =
+  "drop-shadow(0 0 3px rgba(255,255,255,0.95)) drop-shadow(0 0 8px rgba(255,255,255,0.75)) drop-shadow(0 0 18px rgba(255,255,255,0.45))";
+
 const links = [
   { href: "/", label: "Inicio" },
   { href: "/propiedades", label: "Propiedades" },
@@ -41,9 +46,8 @@ export default function Header({ forceSolid = false }: { forceSolid?: boolean })
           <img
             src="/images/logo.png"
             alt="Santerra Negocios Inmobiliarios"
-            className={`h-9 md:h-11 w-auto transition-[filter] duration-500 ease-santerra ${
-              scrolled ? "" : "brightness-0 invert"
-            }`}
+            className="h-12 md:h-16 w-auto transition-[filter] duration-500 ease-santerra"
+            style={{ filter: scrolled ? "none" : LOGO_GLOW }}
           />
         </Link>
 
