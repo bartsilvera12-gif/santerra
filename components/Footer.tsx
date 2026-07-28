@@ -15,8 +15,11 @@ export default function Footer() {
           className="grid md:grid-cols-4 gap-10 pb-12 border-b border-white/10"
         >
           <motion.div variants={fadeUp}>
-            <div className="text-2xl font-bold text-white">SANTERRA</div>
-            <div className="text-[9.5px] tracking-[0.42em] text-white/50 mt-1">NEGOCIOS INMOBILIARIOS</div>
+            <img
+              src="/images/logo.png"
+              alt="Santerra Negocios Inmobiliarios"
+              className="h-10 w-auto brightness-0 invert"
+            />
             <p className="mt-6 text-sm text-white/60 max-w-xs">
               Tu inversión, nuestro compromiso. Asesoramiento inmobiliario en todo Paraguay.
             </p>

@@ -37,11 +37,14 @@ export default function Header({ forceSolid = false }: { forceSolid?: boolean })
       }`}
     >
       <div className="max-w-[1320px] mx-auto px-5 md:px-10 py-4 flex items-center justify-between gap-6">
-        <Link href="/" className={`block leading-none ${scrolled ? "text-santerra-graphite" : "text-white"}`}>
-          <div className="text-[22px] md:text-[26px] font-bold tracking-wide">SANTERRA</div>
-          <div className={`text-[9px] md:text-[9.5px] tracking-[0.42em] mt-1 ${scrolled ? "text-santerra-gray-mid" : "text-white/70"}`}>
-            NEGOCIOS INMOBILIARIOS
-          </div>
+        <Link href="/" aria-label="Santerra Negocios Inmobiliarios" className="block leading-none shrink-0">
+          <img
+            src="/images/logo.png"
+            alt="Santerra Negocios Inmobiliarios"
+            className={`h-9 md:h-11 w-auto transition-[filter] duration-500 ease-santerra ${
+              scrolled ? "" : "brightness-0 invert"
+            }`}
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 lg:gap-9">

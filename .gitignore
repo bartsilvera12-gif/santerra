@@ -4,3 +4,10 @@ out/
 .env*.local
 .DS_Store
 *.log
+tsconfig.tsbuildinfo
+
+# archivos de trabajo / exportaciones de herramientas
+.thumbnail
+support.js
+*.dc.html
+uploads/

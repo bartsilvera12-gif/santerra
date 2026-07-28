@@ -4,7 +4,7 @@ import AboutIntro from "@/components/AboutIntro";
 import FeaturedProperties from "@/components/FeaturedProperties";
 import Categories from "@/components/Categories";
 import InstitutionalVideo from "@/components/InstitutionalVideo";
-import SellProperty from "@/components/SellProperty";
+import BrandQuote from "@/components/BrandQuote";
 import Process from "@/components/Process";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
@@ -20,7 +20,7 @@ export default function HomePage() {
       <FeaturedProperties />
       <Categories />
       <InstitutionalVideo />
-      <SellProperty />
+      <BrandQuote />
       <Process />
       <Testimonials />
       <Contact />
