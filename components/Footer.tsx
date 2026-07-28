@@ -47,11 +47,18 @@ export default function Footer() {
           className="grid md:grid-cols-4 gap-10 pb-12 border-b border-white/10"
         >
           <motion.div variants={fadeUp}>
-            <img
-              src="/images/logo.png"
-              alt="Santerra Negocios Inmobiliarios"
-              className="h-10 w-auto brightness-0 invert"
-            />
+            <span className="relative inline-block leading-none">
+              {/* mismo halo que el header, para el logo a color sobre fondo oscuro */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-x-12 -inset-y-9 rounded-[50%] bg-white blur-xl"
+              />
+              <img
+                src="/images/logo.png"
+                alt="Santerra Negocios Inmobiliarios"
+                className="relative h-12 w-auto"
+              />
+            </span>
             <p className="mt-6 text-sm text-white/60 max-w-xs">
               Tu inversión, nuestro compromiso. Asesoramiento inmobiliario en todo Paraguay.
             </p>
