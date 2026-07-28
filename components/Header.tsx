@@ -37,22 +37,13 @@ export default function Header({ forceSolid = false }: { forceSolid?: boolean })
       }`}
     >
       <div className="max-w-[1320px] mx-auto px-5 md:px-10 py-4 flex items-center justify-between gap-6">
-        <Link
-          href="/"
-          aria-label="Santerra Negocios Inmobiliarios"
-          className="relative block leading-none shrink-0"
-        >
-          {/* halo difuminado: da legibilidad al logo a color sobre el hero oscuro */}
-          <span
-            aria-hidden
-            className={`pointer-events-none absolute -inset-x-12 -inset-y-9 rounded-[50%] bg-white blur-xl transition-opacity duration-500 ease-santerra ${
-              scrolled ? "opacity-0" : "opacity-90"
-            }`}
-          />
+        <Link href="/" aria-label="Santerra Negocios Inmobiliarios" className="block leading-none shrink-0">
           <img
             src="/images/logo.png"
             alt="Santerra Negocios Inmobiliarios"
-            className="relative h-11 md:h-14 w-auto"
+            className={`h-9 md:h-11 w-auto transition-[filter] duration-500 ease-santerra ${
+              scrolled ? "" : "brightness-0 invert"
+            }`}
           />
         </Link>
 

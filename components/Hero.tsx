@@ -63,11 +63,13 @@ export default function Hero() {
         >
           <motion.h1
             variants={fadeUp}
-            className="section-title text-white text-[34px] leading-[1.08] md:text-[60px] md:leading-[1.04] tracking-[-0.01em] font-bold"
+            className="section-title text-white text-[30px] sm:text-[42px] leading-[1.06] md:text-[72px] md:leading-[1.0] tracking-[-0.01em] font-bold"
           >
-            ENCONTRÁ EL LUGAR IDEAL
+            ENCONTRÁ EL LUGAR
             <br />
-            PARA VIVIR O INVERTIR
+            IDEAL PARA VIVIR
+            <br />
+            O INVERTIR
           </motion.h1>
 
           <motion.div variants={fadeUp} className="flex items-center gap-3 mt-8">
