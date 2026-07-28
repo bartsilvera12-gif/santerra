@@ -16,7 +16,7 @@ function Card({ p, index }: { p: Property; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={viewportOnce}
       transition={{ duration: 0.7, delay: index * 0.15, ease: EASE }}
-      className="group relative flex-shrink-0 w-[86%] sm:w-[60%] md:w-[46%] lg:w-[38%] aspect-[16/11] overflow-hidden bg-santerra-graphite"
+      className="group relative w-full aspect-[16/11] overflow-hidden bg-santerra-graphite"
     >
       <Link href={`/propiedades/${p.id}`} className="block absolute inset-0">
         <motion.img
@@ -140,7 +140,10 @@ export default function FeaturedProperties() {
           style={{ scrollBehavior: "smooth" }}
         >
           {items.map((p, i) => (
-            <div key={p.id} className="snap-start">
+            <div
+              key={p.id}
+              className="snap-start flex-shrink-0 w-[86%] sm:w-[60%] md:w-[46%] lg:w-[38%]"
+            >
               <Card p={p} index={i} />
             </div>
           ))}
