@@ -5,6 +5,22 @@ import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
+/** Supabase devuelve los errores en ingles; los mas comunes al configurar. */
+function traducirError(message: string) {
+  const map: Record<string, string> = {
+    "Invalid login credentials": "Usuario o contraseña incorrectos.",
+    "Email not confirmed":
+      "El usuario existe pero el correo no está confirmado. En Supabase, Authentication → Users, abrí el usuario y confirmalo.",
+    "Email logins are disabled":
+      "El ingreso por correo está desactivado. Activalo en Supabase, Authentication → Providers → Email."
+  };
+  if (map[message]) return map[message];
+  if (message.includes("Failed to fetch")) {
+    return "No se pudo conectar con Supabase. Revisá que NEXT_PUBLIC_SUPABASE_URL sea correcta.";
+  }
+  return message;
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -24,11 +40,7 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(
-        error.message === "Invalid login credentials"
-          ? "Usuario o contraseña incorrectos."
-          : error.message
-      );
+      setError(traducirError(error.message));
       setLoading(false);
       return;
     }
