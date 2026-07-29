@@ -122,7 +122,7 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
                 <td className="px-5 py-4">
                   <div className="flex justify-end gap-4 text-[12px] uppercase tracking-[0.16em]">
                     <Link
-                      href={`/admin/propiedades/${p.id}`}
+                      href={`/admin/propiedades/editar/?id=${encodeURIComponent(p.id)}`}
                       className="text-santerra-gray-mid transition hover:text-santerra-red"
                     >
                       Editar

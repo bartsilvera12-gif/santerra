@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
+import { esUrlDeMapsPermitida, extraerCoordenadas } from "@/lib/maps";
 import AdminSelect from "../AdminSelect";
 import FileButton from "../FileButton";
 import NumberField from "../NumberField";
@@ -65,7 +66,15 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
   const [mapsMsg, setMapsMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [coordsAMano, setCoordsAMano] = useState(false);
 
-  /** Resuelve el link de Google Maps y completa latitud y longitud. */
+  /**
+   * Resuelve un link de Google Maps y completa latitud y longitud.
+   *
+   * Primero intenta sacar las coordenadas del link tal cual (los links largos
+   * ya las traen). Si no hay, llama a la Edge Function `resolve-maps` de
+   * Supabase, que sigue la redireccion de los links cortos (maps.app.goo.gl)
+   * y devuelve las coordenadas. No lo podemos hacer desde el navegador
+   * directamente por CORS.
+   */
   async function ubicarDesdeMaps() {
     const url = mapsUrl.trim();
     if (!url) return;
@@ -73,25 +82,81 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
     setMapsMsg(null);
     setUbicando(true);
     try {
-      const res = await fetch("/api/maps", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setMapsMsg({ ok: false, text: data?.error ?? "No se pudo leer el link." });
+      if (!esUrlDeMapsPermitida(url)) {
+        setMapsMsg({
+          ok: false,
+          text: "El link tiene que ser de Google Maps (google.com/maps o maps.app.goo.gl)."
+        });
         return;
       }
 
-      setP((prev) => ({ ...prev, lat: data.lat, lng: data.lng }));
+      // 1) Intento client-side: los links largos ya traen lat/lng en la URL.
+      let coords = extraerCoordenadas(url);
+
+      // 2) Si no hay coords (tipico de los cortos), hay que seguir la
+      //    redireccion desde un servidor. Primero el script PHP que viaja con
+      //    el sitio (mismo dominio, sin CORS); si no esta disponible, se
+      //    prueba la Edge Function de Supabase.
+      if (!coords) {
+        let ultimoError = "";
+
+        try {
+          const res = await fetch("/api/resolve-maps.php", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ url })
+          });
+          const data = await res.json();
+          if (res.ok && typeof data?.lat === "number" && typeof data?.lng === "number") {
+            coords = { lat: data.lat, lng: data.lng };
+          } else {
+            ultimoError = String(data?.error ?? "");
+          }
+        } catch {
+          // En `npm run dev` no hay PHP: se cae al siguiente intento.
+        }
+
+        if (!coords && isSupabaseConfigured) {
+          try {
+            const supabase = createClient();
+            const { data, error } = await supabase.functions.invoke("resolve-maps", {
+              body: { url }
+            });
+            if (!error && typeof data?.lat === "number" && typeof data?.lng === "number") {
+              coords = { lat: data.lat, lng: data.lng };
+            } else if (!ultimoError) {
+              ultimoError = error?.message ?? "";
+            }
+          } catch {
+            /* la Edge Function puede no estar desplegada */
+          }
+        }
+
+        if (!coords) {
+          setMapsMsg({
+            ok: false,
+            text:
+              ultimoError ||
+              "No se pudo resolver el link corto. Abrilo en Google Maps y copiá el link largo desde la barra de direcciones."
+          });
+          return;
+        }
+      }
+
+      if (!coords) {
+        setMapsMsg({
+          ok: false,
+          text:
+            "Ese link no trae coordenadas. Abrilo en Google Maps y copiá el link largo desde la barra de direcciones."
+        });
+        return;
+      }
+
+      setP((prev) => ({ ...prev, lat: coords!.lat, lng: coords!.lng }));
       setMapsMsg({
         ok: true,
-        text: `Ubicación cargada: ${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`
+        text: `Ubicación cargada: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
       });
-    } catch {
-      setMapsMsg({ ok: false, text: "No se pudo conectar. Probá de nuevo." });
     } finally {
       setUbicando(false);
     }
@@ -214,7 +279,7 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
       return;
     }
 
-    router.push("/admin/propiedades");
+    router.push("/admin/propiedades/");
     router.refresh();
   }
 
@@ -357,7 +422,7 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
 
           <p className="mt-2 text-[12px] leading-relaxed text-santerra-gray-mid">
             Pegá el link que te da “Compartir” en Google Maps. Sirve tanto el corto
-            (maps.app.goo.gl) como el largo.
+            (<code>maps.app.goo.gl</code>) como el largo.
           </p>
 
           {mapsMsg && (
@@ -510,7 +575,7 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
           </button>
           <button
             type="button"
-            onClick={() => router.push("/admin/propiedades")}
+            onClick={() => router.push("/admin/propiedades/")}
             className="border border-santerra-gray-line bg-white px-6 py-3.5 text-[12px] uppercase tracking-[0.22em] text-santerra-graphite transition hover:border-santerra-red hover:text-santerra-red"
           >
             Cancelar

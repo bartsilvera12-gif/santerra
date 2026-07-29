@@ -12,7 +12,6 @@ import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { getCategoryCards, getProperties } from "@/lib/supabase/queries";
 
-export const revalidate = 60;
 
 export default async function HomePage() {
   const [properties, cards] = await Promise.all([getProperties(), getCategoryCards()]);

@@ -1,11 +1,45 @@
+"use client";
+
 import Link from "next/link";
-import { getAllProperties } from "@/lib/supabase/queries";
+import { useEffect, useState } from "react";
+import type { Property } from "@/lib/properties";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import AdminGuard from "../AdminGuard";
 import PropertiesTable from "./PropertiesTable";
 
-export const dynamic = "force-dynamic";
+export default function AdminPropiedades() {
+  return (
+    <AdminGuard>
+      <Contenido />
+    </AdminGuard>
+  );
+}
 
-export default async function AdminPropiedades() {
-  const items = await getAllProperties();
+function Contenido() {
+  const [items, setItems] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("properties")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!vivo) return;
+      setItems((data ?? []) as unknown as Property[]);
+      setLoading(false);
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   return (
     <div>
@@ -29,7 +63,11 @@ export default async function AdminPropiedades() {
         </Link>
       </div>
 
-      <PropertiesTable items={items} />
+      {loading ? (
+        <p className="text-[12px] uppercase tracking-[0.22em] text-santerra-gray-mid">Cargando…</p>
+      ) : (
+        <PropertiesTable items={items} />
+      )}
     </div>
   );
 }

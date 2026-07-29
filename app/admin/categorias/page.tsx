@@ -1,10 +1,44 @@
-import { getCategories } from "@/lib/supabase/queries";
+"use client";
+
+import { useEffect, useState } from "react";
+import type { Category } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import AdminGuard from "../AdminGuard";
 import CategoriesEditor from "./CategoriesEditor";
 
-export const dynamic = "force-dynamic";
+export default function AdminCategorias() {
+  return (
+    <AdminGuard>
+      <Contenido />
+    </AdminGuard>
+  );
+}
 
-export default async function AdminCategorias() {
-  const cats = await getCategories();
+function Contenido() {
+  const [cats, setCats] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("categories")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (!vivo) return;
+      setCats((data ?? []) as Category[]);
+      setLoading(false);
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   return (
     <div>
@@ -20,7 +54,11 @@ export default async function AdminCategorias() {
         calcula solo.
       </p>
 
-      <CategoriesEditor initial={cats} />
+      {loading ? (
+        <p className="text-[12px] uppercase tracking-[0.22em] text-santerra-gray-mid">Cargando…</p>
+      ) : (
+        <CategoriesEditor initial={cats} />
+      )}
     </div>
   );
 }

@@ -1,11 +1,47 @@
+"use client";
+
 import Link from "next/link";
-import { getAllProperties, getCategories } from "@/lib/supabase/queries";
+import { useEffect, useState } from "react";
+import type { Property } from "@/lib/properties";
+import type { Category } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import AdminGuard from "./AdminGuard";
 
-export const dynamic = "force-dynamic";
+export default function AdminHome() {
+  return (
+    <AdminGuard>
+      <Dashboard />
+    </AdminGuard>
+  );
+}
 
-export default async function AdminHome() {
-  const [items, cats] = await Promise.all([getAllProperties(), getCategories()]);
+function Dashboard() {
+  const [items, setItems] = useState<Property[]>([]);
+  const [cats, setCats] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let vivo = true;
+    (async () => {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+      const supabase = createClient();
+      const [props, catsRes] = await Promise.all([
+        supabase.from("properties").select("*").order("created_at", { ascending: false }),
+        supabase.from("categories").select("*").order("sort_order", { ascending: true })
+      ]);
+      if (!vivo) return;
+      setItems((props.data ?? []) as unknown as Property[]);
+      setCats((catsRes.data ?? []) as Category[]);
+      setLoading(false);
+    })();
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   const enVenta = items.filter((p) => p.operation === "VENTA").length;
   const enAlquiler = items.filter((p) => p.operation === "ALQUILER").length;
@@ -33,7 +69,7 @@ export default async function AdminHome() {
             Supabase todavía no está configurado
           </p>
           <p>
-            Estás viendo los datos de ejemplo. Los cambios que hagas no se van a guardar hasta
+            Estás viendo el panel vacío. Los cambios que hagas no se van a guardar hasta
             completar <code className="text-santerra-red">.env.local</code> con las credenciales del
             proyecto.
           </p>
@@ -48,7 +84,7 @@ export default async function AdminHome() {
             className="group border-t-2 border-santerra-red bg-white p-6 transition hover:shadow-[0_8px_24px_-16px_rgba(0,0,0,0.35)]"
           >
             <div className="section-title text-[38px] leading-none text-santerra-graphite">
-              {s.value}
+              {loading ? "—" : s.value}
             </div>
             <div className="mt-3 text-[11px] uppercase tracking-[0.22em] text-santerra-gray-mid">
               {s.label}

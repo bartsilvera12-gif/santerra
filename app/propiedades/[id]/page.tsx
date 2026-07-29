@@ -9,7 +9,12 @@ import PropertyCard from "@/components/PropertyCard";
 import PropertyLocation from "@/components/PropertyLocation";
 import { getProperties, getPropertyById } from "@/lib/supabase/queries";
 
-export const revalidate = 60;
+export async function generateStaticParams() {
+  const items = await getProperties();
+  return items.map((p) => ({ id: p.id }));
+}
+
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params

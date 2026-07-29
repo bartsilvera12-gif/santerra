@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import Header from "@/components/Header";
@@ -38,17 +39,12 @@ function normalizeOp(v: string): (typeof OPS)[number] {
   return "Todas";
 }
 
-export default function PropertiesClient({
-  properties,
-  initialTipo,
-  initialOp,
-  initialUbi
-}: {
-  properties: Property[];
-  initialTipo: string;
-  initialOp: string;
-  initialUbi: string;
-}) {
+export default function PropertiesClient({ properties }: { properties: Property[] }) {
+  const searchParams = useSearchParams();
+  const initialTipo = searchParams.get("tipo") ?? "";
+  const initialOp = searchParams.get("op") ?? "";
+  const initialUbi = searchParams.get("ubi") ?? "";
+
   const [tipo, setTipo] = useState<(typeof TIPOS)[number]>(normalizeTipo(initialTipo));
   const [op, setOp] = useState<(typeof OPS)[number]>(normalizeOp(initialOp));
   const [q, setQ] = useState(initialUbi);

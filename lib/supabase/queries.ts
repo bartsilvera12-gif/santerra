@@ -1,6 +1,6 @@
 import { properties as staticProperties, type Property } from "@/lib/properties";
 import { isSupabaseConfigured } from "./config";
-import { createClient } from "./server";
+import { createStaticClient as createClient } from "./static";
 
 export type Category = {
   id: string;
