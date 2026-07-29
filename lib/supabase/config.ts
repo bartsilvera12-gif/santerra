@@ -8,7 +8,22 @@ export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
  */
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-export const PROPERTY_IMAGES_BUCKET = "property-images";
+/**
+ * Bucket donde se guardan las fotos.
+ *
+ * Se puede apuntar a uno ya existente con NEXT_PUBLIC_STORAGE_BUCKET. Crear
+ * un bucket nuevo por SQL no siempre se puede: en Supabase autoalojado las
+ * tablas de storage son de supabase_storage_admin y el editor no tiene
+ * permiso, asi que reutilizar uno existente evita el problema.
+ */
+export const PROPERTY_IMAGES_BUCKET =
+  process.env.NEXT_PUBLIC_STORAGE_BUCKET ?? "property-images";
+
+/**
+ * Carpeta dentro del bucket. Importa cuando el bucket se comparte con otro
+ * proyecto: asi los archivos de Santerra quedan separados.
+ */
+export const STORAGE_PREFIX = process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? "santerra";
 
 /**
  * Las tablas viven en un schema propio, no en "public".

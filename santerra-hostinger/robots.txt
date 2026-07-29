@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://santerra.com.py/sitemap.xml

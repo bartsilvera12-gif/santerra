@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
+import {
+  PROPERTY_IMAGES_BUCKET,
+  STORAGE_PREFIX,
+  isSupabaseConfigured
+} from "@/lib/supabase/config";
 import type { Category } from "@/lib/supabase/queries";
 import FileButton from "../FileButton";
 import { explicarErrorDeSubida } from "../errores";
@@ -91,7 +95,7 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
     setBusy(c.id);
 
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `categorias/${c.slug}-${crypto.randomUUID()}.${ext}`;
+    const path = `${STORAGE_PREFIX}/categorias/${c.slug}-${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase()
       .storage.from(PROPERTY_IMAGES_BUCKET)
       .upload(path, file, { cacheControl: "31536000" });
