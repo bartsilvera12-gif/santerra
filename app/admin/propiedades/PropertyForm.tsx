@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
 import AdminSelect from "../AdminSelect";
 import FileButton from "../FileButton";
+import NumberField from "../NumberField";
 
 const OPERACIONES = ["VENTA", "ALQUILER"] as const;
 const TIPOS = ["Casa", "Departamento", "Terreno", "Comercial"] as const;
@@ -276,31 +277,25 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         <div className="grid gap-6 sm:grid-cols-4">
           <div>
             <label className={label}>Dormitorios</label>
-            <input
-              type="number"
-              min={0}
+            <NumberField
               value={p.beds}
-              onChange={(e) => set("beds", Number(e.target.value))}
+              onChange={(v) => set("beds", v)}
               className={field}
             />
           </div>
           <div>
             <label className={label}>Baños</label>
-            <input
-              type="number"
-              min={0}
+            <NumberField
               value={p.baths}
-              onChange={(e) => set("baths", Number(e.target.value))}
+              onChange={(v) => set("baths", v)}
               className={field}
             />
           </div>
           <div>
             <label className={label}>Superficie m²</label>
-            <input
-              type="number"
-              min={0}
+            <NumberField
               value={p.area}
-              onChange={(e) => set("area", Number(e.target.value))}
+              onChange={(v) => set("area", v)}
               className={field}
             />
           </div>
