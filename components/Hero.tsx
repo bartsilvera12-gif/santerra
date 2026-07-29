@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { EASE, stagger, fadeUp } from "@/lib/animations";
-import PropertySearch from "./PropertySearch";
+import HeroActions from "./HeroActions";
 
 const HERO_VIDEO =
   "https://cdn.coverr.co/videos/coverr-luxury-modern-house-1583/1080p.mp4";
@@ -77,15 +77,10 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* Search bar */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 0.9 }}
-          className="mt-14 md:mt-20"
-        >
-          <PropertySearch />
-        </motion.div>
+        {/* Acciones principales */}
+        <div className="mt-10 md:mt-14">
+          <HeroActions />
+        </div>
       </div>
     </section>
   );
