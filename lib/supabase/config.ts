@@ -16,3 +16,23 @@ export const PROPERTY_IMAGES_BUCKET = "property-images";
  * Data API -> Exposed schemas, si no PostgREST lo rechaza.
  */
 export const DB_SCHEMA = "santerra";
+
+/**
+ * Unicos correos habilitados para entrar al panel. Se puede ampliar con
+ * NEXT_PUBLIC_ADMIN_EMAILS separando por comas.
+ *
+ * Esto es solo la primera barrera: la que manda son las politicas RLS de
+ * supabase/schema.sql, que exigen el mismo correo para escribir. Sin eso,
+ * cualquier usuario de Supabase podria escribir atacando la API directo.
+ */
+export const ADMIN_EMAILS = (
+  process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "admin@santerra.com"
+)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}

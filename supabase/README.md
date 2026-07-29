@@ -75,6 +75,33 @@ Todo `/admin` está protegido por `middleware.ts`: sin sesión redirige al login
 Las páginas públicas se revalidan cada 60 segundos, así que un cambio hecho en el
 panel aparece en el sitio dentro de ese minuto.
 
+## Quién puede entrar al panel
+
+Solo los correos habilitados. Hoy es uno: `admin@santerra.com`.
+
+Está declarado en **dos lugares, y los dos importan**:
+
+| Dónde | Qué hace |
+|---|---|
+| `ADMIN_EMAILS` en `lib/supabase/config.ts` | Corta el acceso a `/admin` en el sitio |
+| `santerra.is_admin()` en la base | Corta la escritura en la API |
+
+El de la base es el que realmente protege: sin él, cualquiera que se registre en
+Supabase puede escribir en las tablas atacando la API directo, sin pasar nunca por
+el sitio.
+
+**Para agregar otro administrador hay que tocar los dos.** En la base, editar el
+array de `santerra.is_admin()` y volver a ejecutar esa función. En el sitio, sumar el
+correo a `NEXT_PUBLIC_ADMIN_EMAILS` separando por comas:
+
+```
+NEXT_PUBLIC_ADMIN_EMAILS=admin@santerra.com,otro@santerra.com
+```
+
+> Conviene además desactivar el registro público en **Authentication → Providers →
+> Email → Enable sign-ups**. Si queda abierto, cualquiera puede crearse una cuenta;
+> no va a poder entrar al panel ni escribir, pero no hay motivo para permitirlo.
+
 ## Seguridad
 
 Las políticas RLS del esquema son la defensa real: la clave `anon` es pública por

@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isAdminEmail, isSupabaseConfigured } from "@/lib/supabase/config";
 
 /** Supabase devuelve los errores en ingles; los mas comunes al configurar. */
 function traducirError(message: string) {
@@ -28,7 +28,11 @@ function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    params.get("error") === "no-autorizado"
+      ? "Esa cuenta no tiene acceso al panel."
+      : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -37,10 +41,19 @@ function LoginForm() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(traducirError(error.message));
+      setLoading(false);
+      return;
+    }
+
+    // Las credenciales son validas pero el correo no esta habilitado:
+    // se descarta la sesion en el acto.
+    if (!isAdminEmail(data.user?.email)) {
+      await supabase.auth.signOut();
+      setError("Esa cuenta no tiene acceso al panel.");
       setLoading(false);
       return;
     }

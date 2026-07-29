@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./config";
+import {
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
+  isAdminEmail,
+  isSupabaseConfigured
+} from "./config";
 
 /**
  * Refresca la sesion en cada request y bloquea /admin para quien no inicio
@@ -46,7 +51,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isLogin) {
+  // Sesion valida pero de un correo que no esta habilitado.
+  if (user && !isAdminEmail(user.email) && !isLogin) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    url.search = "";
+    url.searchParams.set("error", "no-autorizado");
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isAdminEmail(user.email) && isLogin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     url.search = "";

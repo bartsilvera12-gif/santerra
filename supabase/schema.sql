@@ -73,7 +73,24 @@ alter default privileges in schema santerra grant select on tables to anon;
 alter default privileges in schema santerra grant all    on tables to authenticated, service_role;
 
 -- ---------- Seguridad ----------
--- Lectura publica (el sitio la usa sin sesion), escritura solo autenticados.
+-- Lectura publica (el sitio la usa sin sesion), escritura solo para los
+-- correos habilitados. No alcanza con estar autenticado: cualquiera
+-- podria registrarse en Supabase y escribir atacando la API directo.
+
+-- Para sumar administradores, agregar el correo a este array.
+create or replace function santerra.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(auth.jwt() ->> 'email', '') = any (array[
+    'admin@santerra.com'
+  ]);
+$$;
+
+grant execute on function santerra.is_admin() to anon, authenticated;
 
 alter table santerra.properties enable row level security;
 alter table santerra.categories enable row level security;
@@ -82,13 +99,14 @@ drop policy if exists "properties lectura publica" on santerra.properties;
 create policy "properties lectura publica"
   on santerra.properties for select
   to anon, authenticated
-  using (published = true or auth.role() = 'authenticated');
+  using (published = true or santerra.is_admin());
 
-drop policy if exists "properties escritura autenticada" on santerra.properties;
-create policy "properties escritura autenticada"
+drop policy if exists "properties escritura admin" on santerra.properties;
+create policy "properties escritura admin"
   on santerra.properties for all
   to authenticated
-  using (true) with check (true);
+  using (santerra.is_admin())
+  with check (santerra.is_admin());
 
 drop policy if exists "categories lectura publica" on santerra.categories;
 create policy "categories lectura publica"
@@ -96,11 +114,12 @@ create policy "categories lectura publica"
   to anon, authenticated
   using (true);
 
-drop policy if exists "categories escritura autenticada" on santerra.categories;
-create policy "categories escritura autenticada"
+drop policy if exists "categories escritura admin" on santerra.categories;
+create policy "categories escritura admin"
   on santerra.categories for all
   to authenticated
-  using (true) with check (true);
+  using (santerra.is_admin())
+  with check (santerra.is_admin());
 
 -- ---------- Storage de imagenes ----------
 -- El storage vive siempre en el schema "storage", no se mueve.
@@ -115,17 +134,17 @@ create policy "imagenes lectura publica"
   to anon, authenticated
   using (bucket_id = 'property-images');
 
-drop policy if exists "imagenes escritura autenticada" on storage.objects;
-create policy "imagenes escritura autenticada"
+drop policy if exists "imagenes escritura admin" on storage.objects;
+create policy "imagenes escritura admin"
   on storage.objects for insert
   to authenticated
-  with check (bucket_id = 'property-images');
+  with check (bucket_id = 'property-images' and santerra.is_admin());
 
-drop policy if exists "imagenes borrado autenticado" on storage.objects;
-create policy "imagenes borrado autenticado"
+drop policy if exists "imagenes borrado admin" on storage.objects;
+create policy "imagenes borrado admin"
   on storage.objects for delete
   to authenticated
-  using (bucket_id = 'property-images');
+  using (bucket_id = 'property-images' and santerra.is_admin());
 
 -- ---------- Datos iniciales ----------
 
