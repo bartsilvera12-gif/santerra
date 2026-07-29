@@ -6,6 +6,7 @@ import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
 import AdminSelect from "../AdminSelect";
+import FileButton from "../FileButton";
 
 const OPERACIONES = ["VENTA", "ALQUILER"] as const;
 const TIPOS = ["Casa", "Departamento", "Terreno", "Comercial"] as const;
@@ -443,17 +444,9 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         <div className="bg-white p-6">
           <label className={label}>Imágenes</label>
 
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            disabled={uploading}
-            onChange={(e) => onUpload(e.target.files)}
-            className="w-full text-[13px] text-santerra-gray-mid file:mr-4 file:border-0 file:bg-santerra-graphite file:px-4 file:py-2.5 file:text-[11px] file:uppercase file:tracking-[0.18em] file:text-white hover:file:bg-santerra-red"
-          />
-          {uploading && (
-            <p className="mt-3 text-[12px] text-santerra-gray-mid">Subiendo imágenes…</p>
-          )}
+          <FileButton onFiles={onUpload} multiple disabled={uploading}>
+            {uploading ? "Subiendo…" : "Subir imágenes"}
+          </FileButton>
 
           <div className="mt-5 space-y-3">
             {p.gallery.map((url, i) => (

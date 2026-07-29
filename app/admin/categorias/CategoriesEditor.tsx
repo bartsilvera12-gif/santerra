@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
 import type { Category } from "@/lib/supabase/queries";
+import FileButton from "../FileButton";
 
 const label = "mb-2 block text-[11px] uppercase tracking-[0.22em] text-santerra-gray-mid";
 const field =
@@ -132,12 +133,13 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
                   Sin imagen
                 </div>
               )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => subirImagen(c, e.target.files?.[0] ?? null)}
-                className="mt-2 w-full text-[11px] text-santerra-gray-mid file:mr-2 file:border-0 file:bg-santerra-graphite file:px-2 file:py-1.5 file:text-[10px] file:uppercase file:tracking-[0.14em] file:text-white hover:file:bg-santerra-red"
-              />
+              <FileButton
+                onFiles={(files) => subirImagen(c, files?.[0] ?? null)}
+                disabled={busy === c.id}
+                className="mt-2"
+              >
+                {c.image ? "Cambiar" : "Subir"}
+              </FileButton>
             </div>
 
             <div className="flex-1 space-y-4">
