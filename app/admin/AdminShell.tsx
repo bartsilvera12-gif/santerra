@@ -47,9 +47,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [plegada, setPlegada] = useState(false);
 
   // Al navegar se cierra el panel lateral en celular.
   useEffect(() => setOpen(false), [pathname]);
+
+  // Se recuerda si la barra quedo plegada. Se lee despues del montaje para
+  // que el HTML del servidor y el del cliente coincidan.
+  useEffect(() => {
+    setPlegada(localStorage.getItem("admin-barra-plegada") === "1");
+  }, []);
+
+  function alternarPlegada() {
+    setPlegada((v) => {
+      localStorage.setItem("admin-barra-plegada", v ? "0" : "1");
+      return !v;
+    });
+  }
 
   // El login trae su propia pantalla completa, sin barra lateral.
   if (pathname === "/admin/login") return <>{children}</>;
@@ -64,11 +78,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     router.refresh();
   }
 
-  const sidebar = (
+  /** compacta = solo iconos, para la barra plegada en escritorio. */
+  const barra = (compacta: boolean) => (
     <div className="flex h-full flex-col">
-      <div className="border-b border-santerra-gray-line px-6 py-6">
-        <Link href="/admin" className="block">
-          <img src="/images/logo.png" alt="Santerra" className="h-9 w-auto" />
+      <div
+        className={`flex items-center border-b border-santerra-gray-line py-6 ${
+          compacta ? "justify-center px-3" : "px-6"
+        }`}
+      >
+        <Link href="/admin" className="block" title="Santerra">
+          <img
+            src={compacta ? "/favicon.png" : "/images/logo.png"}
+            alt="Santerra"
+            className={compacta ? "h-8 w-8 object-contain" : "h-9 w-auto"}
+          />
         </Link>
       </div>
 
@@ -79,7 +102,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <Link
               key={l.href}
               href={l.href}
-              className={`mb-1 flex items-center gap-3 border-l-2 px-4 py-3 text-[12px] uppercase tracking-[0.16em] transition-colors ${
+              title={compacta ? l.label : undefined}
+              className={`mb-1 flex items-center gap-3 border-l-2 py-3 text-[12px] uppercase tracking-[0.16em] transition-colors ${
+                compacta ? "justify-center px-0" : "px-4"
+              } ${
                 active
                   ? "border-santerra-red bg-santerra-gray text-santerra-graphite"
                   : "border-transparent text-santerra-gray-mid hover:bg-santerra-gray hover:text-santerra-graphite"
@@ -94,12 +120,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 strokeWidth="1.7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={active ? "text-santerra-red" : ""}
+                className={`shrink-0 ${active ? "text-santerra-red" : ""}`}
                 aria-hidden="true"
               >
                 {l.icon}
               </svg>
-              {l.label}
+              {!compacta && l.label}
             </Link>
           );
         })}
@@ -109,25 +135,31 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-3 px-4 py-2.5 text-[12px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red"
+          title={compacta ? "Ver sitio" : undefined}
+          className={`flex items-center gap-3 py-2.5 text-[12px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red ${
+            compacta ? "justify-center px-0" : "px-4"
+          }`}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" className="shrink-0" aria-hidden="true">
             <path d="M14 4h6v6" />
             <path d="M20 4 10 14" />
             <path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
           </svg>
-          Ver sitio
+          {!compacta && "Ver sitio"}
         </Link>
         <button
           onClick={logout}
-          className="flex w-full items-center gap-3 px-4 py-2.5 text-[12px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red"
+          title={compacta ? "Salir" : undefined}
+          className={`flex w-full items-center gap-3 py-2.5 text-[12px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red ${
+            compacta ? "justify-center px-0" : "px-4"
+          }`}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" className="shrink-0" aria-hidden="true">
             <path d="M15 17l5-5-5-5" />
             <path d="M20 12H9" />
             <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4" />
           </svg>
-          Salir
+          {!compacta && "Salir"}
         </button>
       </div>
     </div>
@@ -136,8 +168,35 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen bg-santerra-gray">
       {/* Barra lateral fija en escritorio */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r border-santerra-gray-line bg-white md:block">
-        {sidebar}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 hidden border-r border-santerra-gray-line bg-white transition-[width] duration-300 ease-santerra md:block ${
+          plegada ? "w-[76px]" : "w-60"
+        }`}
+      >
+        {barra(plegada)}
+
+        <button
+          onClick={alternarPlegada}
+          aria-label={plegada ? "Mostrar la barra" : "Ocultar la barra"}
+          aria-expanded={!plegada}
+          title={plegada ? "Mostrar la barra" : "Ocultar la barra"}
+          className="absolute -right-3 top-24 flex h-7 w-7 items-center justify-center rounded-full border border-santerra-gray-line bg-white text-santerra-gray-mid shadow-[0_2px_8px_-2px_rgba(10,14,18,0.25)] transition hover:border-santerra-red hover:text-santerra-red"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={`transition-transform duration-300 ${plegada ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
       </aside>
 
       {/* Barra superior con menu en celular */}
@@ -160,11 +219,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-santerra-black/50"
           />
-          <aside className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl">{sidebar}</aside>
+          <aside className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl">{barra(false)}</aside>
         </div>
       )}
 
-      <main className="md:ml-60">
+      <main
+        className={`transition-[margin] duration-300 ease-santerra ${
+          plegada ? "md:ml-[76px]" : "md:ml-60"
+        }`}
+      >
         <div className="max-w-[1240px] px-5 py-8 md:px-10 md:py-12">{children}</div>
       </main>
     </div>
