@@ -53,6 +53,42 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [mapsUrl, setMapsUrl] = useState("");
+  const [ubicando, setUbicando] = useState(false);
+  const [mapsMsg, setMapsMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  /** Resuelve el link de Google Maps y completa latitud y longitud. */
+  async function ubicarDesdeMaps() {
+    const url = mapsUrl.trim();
+    if (!url) return;
+
+    setMapsMsg(null);
+    setUbicando(true);
+    try {
+      const res = await fetch("/api/maps", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMapsMsg({ ok: false, text: data?.error ?? "No se pudo leer el link." });
+        return;
+      }
+
+      setP((prev) => ({ ...prev, lat: data.lat, lng: data.lng }));
+      setMapsMsg({
+        ok: true,
+        text: `Ubicación cargada: ${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`
+      });
+    } catch {
+      setMapsMsg({ ok: false, text: "No se pudo conectar. Probá de nuevo." });
+    } finally {
+      setUbicando(false);
+    }
+  }
+
   const set = <K extends keyof Property>(key: K, value: Property[K]) =>
     setP((prev) => ({ ...prev, [key]: value }));
 
@@ -310,26 +346,93 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
           />
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <label className={label}>Latitud</label>
+        {/* ---------- Ubicación en el mapa ---------- */}
+        <div className="border-t border-santerra-gray-line pt-6">
+          <label className={label}>Link de Google Maps</label>
+          <div className="flex flex-wrap gap-3">
             <input
-              type="number"
-              step="any"
-              value={p.lat}
-              onChange={(e) => set("lat", Number(e.target.value))}
-              className={field}
+              value={mapsUrl}
+              onChange={(e) => setMapsUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  ubicarDesdeMaps();
+                }
+              }}
+              placeholder="https://maps.app.goo.gl/…"
+              className={`${field} min-w-[220px] flex-1`}
             />
+            <button
+              type="button"
+              onClick={ubicarDesdeMaps}
+              disabled={ubicando}
+              className="bg-santerra-graphite px-6 py-3 text-[12px] uppercase tracking-[0.18em] text-white transition hover:bg-santerra-red disabled:opacity-60"
+            >
+              {ubicando ? "Buscando…" : "Ubicar"}
+            </button>
           </div>
-          <div>
-            <label className={label}>Longitud</label>
-            <input
-              type="number"
-              step="any"
-              value={p.lng}
-              onChange={(e) => set("lng", Number(e.target.value))}
-              className={field}
-            />
+
+          <p className="mt-2 text-[12px] leading-relaxed text-santerra-gray-mid">
+            Pegá el link que te da “Compartir” en Google Maps. Sirve tanto el corto
+            (maps.app.goo.gl) como el largo.
+          </p>
+
+          {mapsMsg && (
+            <p
+              className={`mt-3 border-l-2 px-4 py-2.5 text-[13px] ${
+                mapsMsg.ok
+                  ? "border-santerra-graphite bg-santerra-gray text-santerra-graphite"
+                  : "border-santerra-red bg-white text-santerra-graphite"
+              }`}
+            >
+              {mapsMsg.text}
+            </p>
+          )}
+
+          <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            <div>
+              <label className={label}>Latitud</label>
+              <input
+                type="number"
+                step="any"
+                value={p.lat}
+                onChange={(e) => set("lat", Number(e.target.value))}
+                className={field}
+              />
+            </div>
+            <div>
+              <label className={label}>Longitud</label>
+              <input
+                type="number"
+                step="any"
+                value={p.lng}
+                onChange={(e) => set("lng", Number(e.target.value))}
+                className={field}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between">
+              <span className={`${label} mb-0`}>Vista previa</span>
+              <a
+                href={`https://www.google.com/maps/@${p.lat},${p.lng},17z`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red"
+              >
+                Abrir en Maps
+              </a>
+            </div>
+            <div className="aspect-[16/9] w-full overflow-hidden border border-santerra-gray-line bg-santerra-gray">
+              <iframe
+                key={`${p.lat},${p.lng}`}
+                src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=16&t=m&hl=es&output=embed`}
+                className="h-full w-full border-0"
+                loading="lazy"
+                title="Ubicación de la propiedad"
+              />
+            </div>
           </div>
         </div>
       </div>
