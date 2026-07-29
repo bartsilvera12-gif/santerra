@@ -1,3 +1,5 @@
+import { PROPERTY_IMAGES_BUCKET } from "@/lib/supabase/config";
+
 /**
  * Traduce los errores de subida de Supabase Storage, que llegan en ingles y
  * sin pistas de que hacer.
@@ -8,12 +10,13 @@
  */
 export function explicarErrorDeSubida(mensaje: string): string {
   const m = mensaje.toLowerCase();
+  const bucket = `"${PROPERTY_IMAGES_BUCKET}"`;
 
   if (m.includes("failed to fetch") || m.includes("networkerror")) {
-    return 'No se pudo contactar al almacenamiento. Suele ser porque falta crear el bucket "property-images": corré supabase/004-bucket-imagenes.sql.';
+    return `No se pudo contactar al almacenamiento. Suele ser porque falta crear el bucket ${bucket}: corré supabase/006-bucket-santerra.sql.`;
   }
   if (m.includes("bucket not found")) {
-    return 'El bucket "property-images" no existe. Corré supabase/004-bucket-imagenes.sql.';
+    return `El bucket ${bucket} no existe. Corré supabase/006-bucket-santerra.sql.`;
   }
   if (m.includes("row-level security") || m.includes("unauthorized") || m.includes("403")) {
     return "Tu usuario no tiene permiso para subir. Revisá que el correo esté en santerra.is_admin().";

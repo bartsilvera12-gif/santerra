@@ -6,8 +6,8 @@ import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import {
   PROPERTY_IMAGES_BUCKET,
-  STORAGE_PREFIX,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  rutaDeArchivo
 } from "@/lib/supabase/config";
 import { esUrlDeMapsPermitida, extraerCoordenadas } from "@/lib/maps";
 import AdminSelect from "../AdminSelect";
@@ -215,7 +215,11 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
 
     for (const file of Array.from(files)) {
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `${STORAGE_PREFIX}/propiedades/${p.id || "sin-id"}/${crypto.randomUUID()}.${ext}`;
+      const path = rutaDeArchivo(
+        "propiedades",
+        p.id || "sin-id",
+        `${crypto.randomUUID()}.${ext}`
+      );
 
       const { error: upErr } = await supabase.storage
         .from(PROPERTY_IMAGES_BUCKET)

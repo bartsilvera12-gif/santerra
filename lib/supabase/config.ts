@@ -11,19 +11,20 @@ export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 /**
  * Bucket donde se guardan las fotos.
  *
- * Se puede apuntar a uno ya existente con NEXT_PUBLIC_STORAGE_BUCKET. Crear
- * un bucket nuevo por SQL no siempre se puede: en Supabase autoalojado las
- * tablas de storage son de supabase_storage_admin y el editor no tiene
- * permiso, asi que reutilizar uno existente evita el problema.
+ * El nombre lleva la marca a proposito: esta instancia de Supabase aloja
+ * varios proyectos y los buckets son un espacio de nombres compartido.
+ * "property-images", por ejemplo, ya lo ocupa otra inmobiliaria.
  */
 export const PROPERTY_IMAGES_BUCKET =
-  process.env.NEXT_PUBLIC_STORAGE_BUCKET ?? "property-images";
+  process.env.NEXT_PUBLIC_STORAGE_BUCKET ?? "santerra-medios";
 
-/**
- * Carpeta dentro del bucket. Importa cuando el bucket se comparte con otro
- * proyecto: asi los archivos de Santerra quedan separados.
- */
-export const STORAGE_PREFIX = process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? "santerra";
+/** Carpeta opcional dentro del bucket. Vacia si el bucket es solo nuestro. */
+export const STORAGE_PREFIX = process.env.NEXT_PUBLIC_STORAGE_PREFIX ?? "";
+
+/** Arma la ruta de un archivo respetando el prefijo cuando existe. */
+export function rutaDeArchivo(...partes: string[]): string {
+  return [STORAGE_PREFIX, ...partes].filter(Boolean).join("/");
+}
 
 /**
  * Las tablas viven en un schema propio, no en "public".
