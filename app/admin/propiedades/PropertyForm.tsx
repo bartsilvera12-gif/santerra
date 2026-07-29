@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
+import AdminSelect from "../AdminSelect";
 
 const OPERACIONES = ["VENTA", "ALQUILER"] as const;
 const TIPOS = ["Casa", "Departamento", "Terreno", "Comercial"] as const;
@@ -56,6 +57,7 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
   const [mapsUrl, setMapsUrl] = useState("");
   const [ubicando, setUbicando] = useState(false);
   const [mapsMsg, setMapsMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [coordsAMano, setCoordsAMano] = useState(false);
 
   /** Resuelve el link de Google Maps y completa latitud y longitud. */
   async function ubicarDesdeMaps() {
@@ -254,31 +256,19 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
             <label className={label}>Operación</label>
-            <select
+            <AdminSelect
               value={p.operation}
-              onChange={(e) => set("operation", e.target.value as Property["operation"])}
-              className={field}
-            >
-              {OPERACIONES.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => set("operation", v as Property["operation"])}
+              options={OPERACIONES.map((o) => ({ value: o, label: o }))}
+            />
           </div>
           <div>
             <label className={label}>Tipo</label>
-            <select
+            <AdminSelect
               value={p.type}
-              onChange={(e) => set("type", e.target.value as Property["type"])}
-              className={field}
-            >
-              {TIPOS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => set("type", v as Property["type"])}
+              options={TIPOS.map((t) => ({ value: t, label: t }))}
+            />
           </div>
         </div>
 
@@ -389,40 +379,51 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
             </p>
           )}
 
-          <div className="mt-5 grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className={label}>Latitud</label>
-              <input
-                type="number"
-                step="any"
-                value={p.lat}
-                onChange={(e) => set("lat", Number(e.target.value))}
-                className={field}
-              />
+          {coordsAMano && (
+            <div className="mt-5 grid gap-6 sm:grid-cols-2">
+              <div>
+                <label className={label}>Latitud</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={p.lat}
+                  onChange={(e) => set("lat", Number(e.target.value))}
+                  className={field}
+                />
+              </div>
+              <div>
+                <label className={label}>Longitud</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={p.lng}
+                  onChange={(e) => set("lng", Number(e.target.value))}
+                  className={field}
+                />
+              </div>
             </div>
-            <div>
-              <label className={label}>Longitud</label>
-              <input
-                type="number"
-                step="any"
-                value={p.lng}
-                onChange={(e) => set("lng", Number(e.target.value))}
-                className={field}
-              />
-            </div>
-          </div>
+          )}
 
           <div className="mt-5">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
               <span className={`${label} mb-0`}>Vista previa</span>
-              <a
-                href={`https://www.google.com/maps/@${p.lat},${p.lng},17z`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:text-santerra-red"
-              >
-                Abrir en Maps
-              </a>
+              <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.16em]">
+                <button
+                  type="button"
+                  onClick={() => setCoordsAMano((v) => !v)}
+                  className="text-santerra-gray-mid transition hover:text-santerra-red"
+                >
+                  {coordsAMano ? "Ocultar coordenadas" : "Editar a mano"}
+                </button>
+                <a
+                  href={`https://www.google.com/maps/@${p.lat},${p.lng},17z`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-santerra-gray-mid transition hover:text-santerra-red"
+                >
+                  Abrir en Maps
+                </a>
+              </div>
             </div>
             <div className="aspect-[16/9] w-full overflow-hidden border border-santerra-gray-line bg-santerra-gray">
               <iframe

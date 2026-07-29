@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import AdminSelect from "../AdminSelect";
 
 export default function PropertiesTable({ items }: { items: Property[] }) {
   const router = useRouter();
@@ -52,15 +53,16 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
           placeholder="Buscar por título, ubicación o ciudad…"
           className="min-w-[240px] flex-1 border border-santerra-gray-line bg-white px-4 py-3 text-[14px] text-santerra-graphite outline-none transition focus:border-santerra-red"
         />
-        <select
+        <AdminSelect
           value={op}
-          onChange={(e) => setOp(e.target.value)}
-          className="border border-santerra-gray-line bg-white px-4 py-3 text-[14px] text-santerra-graphite outline-none transition focus:border-santerra-red"
-        >
-          <option value="">Todas las operaciones</option>
-          <option value="VENTA">Venta</option>
-          <option value="ALQUILER">Alquiler</option>
-        </select>
+          onChange={setOp}
+          placeholder="Todas las operaciones"
+          options={[
+            { value: "VENTA", label: "Venta" },
+            { value: "ALQUILER", label: "Alquiler" }
+          ]}
+          className="min-w-[220px]"
+        />
       </div>
 
       {!isSupabaseConfigured && (
