@@ -7,14 +7,16 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 import PropertyGallery from "@/components/PropertyGallery";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyLocation from "@/components/PropertyLocation";
-import { getProperty, properties } from "@/lib/properties";
+import { getProperties, getPropertyById } from "@/lib/supabase/queries";
 
-export function generateStaticParams() {
-  return properties.map((p) => ({ id: p.id }));
-}
+export const revalidate = 60;
 
-export function generateMetadata({ params }: { params: { id: string } }): Metadata {
-  const p = getProperty(params.id);
+export async function generateMetadata({
+  params
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const p = await getPropertyById(params.id);
   if (!p) return { title: "Propiedad no encontrada" };
   return {
     title: `${p.title} — Santerra`,
@@ -22,10 +24,11 @@ export function generateMetadata({ params }: { params: { id: string } }): Metada
   };
 }
 
-export default function PropertyDetailPage({ params }: { params: { id: string } }) {
-  const p = getProperty(params.id);
+export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
+  const p = await getPropertyById(params.id);
   if (!p) notFound();
 
+  const properties = await getProperties();
   const related = properties.filter((x) => x.id !== p.id && x.type === p.type).slice(0, 3);
 
   return (

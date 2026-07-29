@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import PageHero from "@/components/PageHero";
 import PropertyCard from "@/components/PropertyCard";
-import { properties } from "@/lib/properties";
+import type { Property } from "@/lib/properties";
 import { fadeUp, viewportOnce } from "@/lib/animations";
 
 const PropertiesMap = dynamic(() => import("@/components/PropertiesMap"), {
@@ -39,10 +39,12 @@ function normalizeOp(v: string): (typeof OPS)[number] {
 }
 
 export default function PropertiesClient({
+  properties,
   initialTipo,
   initialOp,
   initialUbi
 }: {
+  properties: Property[];
   initialTipo: string;
   initialOp: string;
   initialUbi: string;
@@ -58,7 +60,7 @@ export default function PropertiesClient({
       if (q && !`${p.title} ${p.location}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [tipo, op, q]);
+  }, [properties, tipo, op, q]);
 
   return (
     <main>

@@ -4,10 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { fadeUp, staggerCards, viewportOnce, EASE } from "@/lib/animations";
-import { properties } from "@/lib/properties";
 import type { Property } from "@/lib/properties";
-
-const items = properties.slice(0, 5);
 
 function Card({ p, index }: { p: Property; index: number }) {
   return (
@@ -64,7 +61,8 @@ function Card({ p, index }: { p: Property; index: number }) {
   );
 }
 
-export default function FeaturedProperties() {
+export default function FeaturedProperties({ properties }: { properties: Property[] }) {
+  const items = properties.slice(0, 5);
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -148,6 +146,12 @@ export default function FeaturedProperties() {
             </div>
           ))}
         </div>
+
+        {items.length === 0 && (
+          <p className="py-16 text-center text-white/50">
+            Todavía no hay propiedades publicadas.
+          </p>
+        )}
 
         <div className="mt-8 flex items-center justify-center gap-2">
           {items.map((_, i) => (

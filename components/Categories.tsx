@@ -3,14 +3,17 @@
 import { motion } from "framer-motion";
 import { fadeUp, viewportOnce, EASE, staggerCards } from "@/lib/animations";
 
-const cats = [
-  { title: "Casas", count: "42 propiedades", image: "/images/property-1.png" },
-  { title: "Departamentos", count: "68 propiedades", image: "/images/property-2.png" },
-  { title: "Terrenos", count: "24 propiedades", image: "/images/property-3.png" },
-  { title: "Comerciales", count: "18 propiedades", image: "/images/property-1.png" }
-];
+export type CategoryCard = {
+  slug: string;
+  title: string;
+  image: string;
+  count: number;
+  /** Tipo de propiedad que filtra la tarjeta, en singular ("Casa", "Terreno"). */
+  type: string;
+};
 
-export default function Categories() {
+export default function Categories({ categories }: { categories: CategoryCard[] }) {
+  const cats = categories;
   return (
     <section id="inversiones" className="bg-santerra-gray py-20 md:py-28">
       <div className="max-w-[1320px] mx-auto px-5 md:px-10">
@@ -31,9 +34,9 @@ export default function Categories() {
           <div className="mt-12 grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {cats.map((c, i) => (
               <motion.a
-                key={c.title}
+                key={c.slug}
                 variants={fadeUp}
-                href="#propiedades"
+                href={`/propiedades?tipo=${encodeURIComponent(c.type)}`}
                 className="group relative aspect-[4/5] overflow-hidden bg-santerra-graphite"
               >
                 <motion.img
@@ -48,7 +51,9 @@ export default function Categories() {
                 <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white">
                   <div className="w-6 h-[2px] bg-santerra-red mb-3" />
                   <h3 className="section-title text-xl md:text-2xl">{c.title}</h3>
-                  <p className="text-[12px] text-white/70 mt-1">{c.count}</p>
+                  <p className="text-[12px] text-white/70 mt-1">
+                    {c.count === 1 ? "1 propiedad" : `${c.count} propiedades`}
+                  </p>
                   <motion.div
                     className="mt-3 flex items-center gap-2 text-santerra-red text-[11px] tracking-[0.22em] uppercase"
                     initial={{ x: 0 }}

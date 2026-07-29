@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { properties } from "@/lib/properties";
+import { getProperties } from "@/lib/supabase/queries";
 
 const BASE = "https://santerra.com.py";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const properties = await getProperties();
   const staticRoutes: MetadataRoute.Sitemap = [
     "",
     "/propiedades",

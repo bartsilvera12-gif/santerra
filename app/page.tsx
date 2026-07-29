@@ -10,15 +10,20 @@ import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
+import { getCategoryCards, getProperties } from "@/lib/supabase/queries";
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [properties, cards] = await Promise.all([getProperties(), getCategoryCards()]);
+
   return (
     <main>
       <Header />
       <Hero />
       <AboutIntro />
-      <FeaturedProperties />
-      <Categories />
+      <FeaturedProperties properties={properties} />
+      <Categories categories={cards} />
       <InstitutionalVideo />
       <BrandQuote />
       <Process />
