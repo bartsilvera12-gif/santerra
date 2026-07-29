@@ -66,10 +66,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }
 
   // El login trae su propia pantalla completa, sin barra lateral.
-  if (pathname === "/admin/login") return <>{children}</>;
+  // El export estatico usa trailingSlash, asi que la ruta llega como
+  // "/admin/login/". Se normaliza para que las comparaciones no dependan
+  // de la barra final.
+  const ruta = pathname.replace(/\/+$/, "") || "/";
+
+  if (ruta === "/admin/login") return <>{children}</>;
 
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    href === "/admin" ? ruta === "/admin" : ruta.startsWith(href);
 
   async function logout() {
     const supabase = createClient();
