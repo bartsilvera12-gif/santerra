@@ -71,37 +71,6 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
   const [ubicando, setUbicando] = useState(false);
   const [mapsMsg, setMapsMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [coordsAMano, setCoordsAMano] = useState(false);
-  const [imagenUrl, setImagenUrl] = useState("");
-
-  /**
-   * Suma una imagen pegando su URL, sin pasar por el storage.
-   * Sirve de escape cuando el bucket no esta disponible.
-   */
-  function agregarImagenPorUrl() {
-    const url = imagenUrl.trim();
-    if (!url) return;
-
-    try {
-      const u = new URL(url);
-      if (u.protocol !== "https:" && u.protocol !== "http:") throw new Error();
-    } catch {
-      setError("Esa no es una URL válida. Tiene que empezar con https://");
-      return;
-    }
-
-    if (p.gallery.includes(url)) {
-      setError("Esa imagen ya está en la lista.");
-      return;
-    }
-
-    setError(null);
-    setP((prev) => ({
-      ...prev,
-      gallery: [...prev.gallery, url],
-      image: prev.image || url
-    }));
-    setImagenUrl("");
-  }
 
   /**
    * Resuelve un link de Google Maps y completa latitud y longitud.
@@ -543,28 +512,6 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
             {uploading ? "Subiendo…" : "Subir imágenes"}
           </FileButton>
 
-          {/* Alternativa si el storage no esta disponible. */}
-          <div className="mt-3 flex gap-2">
-            <input
-              value={imagenUrl}
-              onChange={(e) => setImagenUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  agregarImagenPorUrl();
-                }
-              }}
-              placeholder="…o pegá la URL de una imagen"
-              className="min-w-0 flex-1 border border-santerra-gray-line bg-white px-3 py-2 text-[13px] text-santerra-graphite outline-none transition focus:border-santerra-red"
-            />
-            <button
-              type="button"
-              onClick={agregarImagenPorUrl}
-              className="shrink-0 border border-santerra-gray-line px-4 py-2 text-[11px] uppercase tracking-[0.16em] text-santerra-gray-mid transition hover:border-santerra-red hover:text-santerra-red"
-            >
-              Agregar
-            </button>
-          </div>
 
           <div className="mt-5 space-y-3">
             {p.gallery.map((url, i) => (
