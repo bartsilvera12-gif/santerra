@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { fadeUp, viewportOnce } from "@/lib/animations";
-import { LOGO_GLOW } from "./Header";
 
 const socials = [
   {
@@ -49,10 +48,9 @@ export default function Footer() {
         >
           <motion.div variants={fadeUp}>
             <img
-              src="/images/logo.png"
+              src="/images/logo-light.png"
               alt="Santerra Negocios Inmobiliarios"
               className="h-16 w-auto"
-              style={{ filter: LOGO_GLOW }}
             />
             <p className="mt-6 text-sm text-white/60 max-w-xs">
               Tu inversión, nuestro compromiso. Asesoramiento inmobiliario en todo Paraguay.

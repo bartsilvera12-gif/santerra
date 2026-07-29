@@ -5,11 +5,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 
-// resplandor suave que sigue el contorno del logo, para que la version a
-// color se lea sobre el hero oscuro sin recuadro ni mancha detras
-export const LOGO_GLOW =
-  "drop-shadow(0 0 3px rgba(255,255,255,0.95)) drop-shadow(0 0 8px rgba(255,255,255,0.75)) drop-shadow(0 0 18px rgba(255,255,255,0.45))";
-
 const links = [
   { href: "/", label: "Inicio" },
   { href: "/propiedades", label: "Propiedades" },
@@ -42,12 +37,27 @@ export default function Header({ forceSolid = false }: { forceSolid?: boolean })
       }`}
     >
       <div className="max-w-[1320px] mx-auto px-5 md:px-10 py-4 flex items-center justify-between gap-6">
-        <Link href="/" aria-label="Santerra Negocios Inmobiliarios" className="block leading-none shrink-0">
+        <Link
+          href="/"
+          aria-label="Santerra Negocios Inmobiliarios"
+          className="relative block leading-none shrink-0 h-14 md:h-20"
+        >
+          {/* sobre la barra blanca: logo con sus colores originales */}
           <img
             src="/images/logo.png"
             alt="Santerra Negocios Inmobiliarios"
-            className="h-14 md:h-20 w-auto transition-[filter] duration-500 ease-santerra"
-            style={{ filter: scrolled ? "none" : LOGO_GLOW }}
+            className={`h-full w-auto transition-opacity duration-500 ease-santerra ${
+              scrolled ? "opacity-100" : "opacity-0"
+            }`}
+          />
+          {/* sobre el hero oscuro: mismo logo con las letras en blanco */}
+          <img
+            src="/images/logo-light.png"
+            alt=""
+            aria-hidden
+            className={`absolute inset-0 h-full w-auto transition-opacity duration-500 ease-santerra ${
+              scrolled ? "opacity-0" : "opacity-100"
+            }`}
           />
         </Link>
 
