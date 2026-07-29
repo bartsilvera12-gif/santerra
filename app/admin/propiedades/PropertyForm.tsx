@@ -50,7 +50,11 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
   const router = useRouter();
   const isEdit = Boolean(initial);
 
-  const [p, setP] = useState<Property>(initial ?? EMPTY);
+  // Al editar, el campo unico de ciudad arranca con el texto mas completo de
+  // los dos que hay guardados, para no perder el detalle ya cargado.
+  const [p, setP] = useState<Property>(
+    initial ? { ...initial, city: initial.location || initial.city } : EMPTY
+  );
   const [featuresText, setFeaturesText] = useState((initial?.features ?? []).join("\n"));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -174,7 +178,9 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
     const row = {
       id,
       title: p.title,
-      location: p.location,
+      // Un solo campo en el formulario alimenta las dos columnas: location es
+      // lo que muestra el sitio publico y city lo que usa el buscador.
+      location: p.city,
       city: p.city,
       beds: p.beds,
       baths: p.baths,
@@ -232,27 +238,18 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
           )}
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <label className={label}>Ubicación</label>
-            <input
-              required
-              value={p.location}
-              onChange={(e) => set("location", e.target.value)}
-              className={field}
-              placeholder="San Bernardino, Cordillera"
-            />
-          </div>
-          <div>
-            <label className={label}>Ciudad</label>
-            <input
-              required
-              value={p.city}
-              onChange={(e) => set("city", e.target.value)}
-              className={field}
-              placeholder="San Bernardino"
-            />
-          </div>
+        <div>
+          <label className={label}>Ciudad</label>
+          <input
+            required
+            value={p.city}
+            onChange={(e) => set("city", e.target.value)}
+            className={field}
+            placeholder="San Bernardino, Cordillera"
+          />
+          <p className="mt-2 text-[12px] text-santerra-gray-mid">
+            Es lo que se muestra bajo el título en las tarjetas y en el detalle.
+          </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
