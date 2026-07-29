@@ -1,21 +1,45 @@
 -- ============================================================
--- Crea el bucket de imagenes y sus permisos.
+-- Bucket de imagenes: crear y dar permisos.
 --
--- Correr en el SQL Editor de Supabase si al subir una foto aparece
--- "Failed to fetch" o "Bucket not found".
+-- IMPORTANTE: correr los pasos POR SEPARADO, no todo de una.
 --
--- Es seguro repetirlo.
+-- El SQL Editor ejecuta el script entero en una transaccion: si una
+-- sentencia falla, se revierte todo lo anterior. En Supabase autoalojado
+-- el schema "storage" pertenece al rol supabase_storage_admin, asi que
+-- las politicas suelen fallar con:
+--
+--     ERROR: must be owner of table objects
+--
+-- y eso se lleva puesto tambien la creacion del bucket.
+-- ============================================================
+
+
+-- ============================================================
+-- PASO 1 — Crear el bucket.  Seleccionar SOLO estas lineas y ejecutar.
 -- ============================================================
 
 insert into storage.buckets (id, name, public)
 values ('property-images', 'property-images', true)
 on conflict (id) do update set public = true;
 
--- ---------- Permisos ----------
--- Lectura para cualquiera (las fotos se ven en el sitio publico) y
--- escritura solo para los correos habilitados en santerra.is_admin().
+-- Verificacion: tiene que devolver una fila con public = true.
+select id, name, public from storage.buckets where id = 'property-images';
 
-drop policy if exists "imagenes lectura publica"     on storage.objects;
+
+-- ============================================================
+-- PASO 2 — Politicas.  Seleccionar SOLO desde aca y ejecutar.
+--
+-- Si da "must be owner of table objects", saltear este paso y hacerlo
+-- desde el panel: Storage -> property-images -> Policies -> New policy.
+-- Ahi hay que crear cuatro, con estas condiciones:
+--
+--   SELECT  (para anon y authenticated):  bucket_id = 'property-images'
+--   INSERT  (authenticated):  bucket_id = 'property-images' and santerra.is_admin()
+--   UPDATE  (authenticated):  idem
+--   DELETE  (authenticated):  idem
+-- ============================================================
+
+drop policy if exists "imagenes lectura publica"       on storage.objects;
 drop policy if exists "imagenes escritura autenticada" on storage.objects;
 drop policy if exists "imagenes borrado autenticado"   on storage.objects;
 drop policy if exists "imagenes escritura admin"       on storage.objects;
@@ -32,7 +56,6 @@ create policy "imagenes escritura admin"
   to authenticated
   with check (bucket_id = 'property-images' and santerra.is_admin());
 
--- Necesaria para que el cliente pueda reintentar una subida (upsert).
 create policy "imagenes update admin"
   on storage.objects for update
   to authenticated
@@ -44,14 +67,19 @@ create policy "imagenes borrado admin"
   to authenticated
   using (bucket_id = 'property-images' and santerra.is_admin());
 
--- ---------- Verificacion ----------
--- Tiene que aparecer property-images con public = true.
-
-select id, name, public from storage.buckets where id = 'property-images';
-
--- Y las cuatro politicas.
+-- Verificacion: tienen que aparecer las cuatro.
 select policyname, cmd
 from pg_policies
 where schemaname = 'storage' and tablename = 'objects'
   and policyname like 'imagenes%'
 order by policyname;
+
+
+-- ============================================================
+-- Alternativa mas simple para el PASO 1
+--
+-- Crear el bucket desde el panel de Supabase:
+--   Storage -> New bucket
+--   Name: property-images
+--   Public bucket: SI
+-- ============================================================
