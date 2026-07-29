@@ -13,7 +13,7 @@ export function explicarErrorDeSubida(mensaje: string): string {
   const bucket = `"${PROPERTY_IMAGES_BUCKET}"`;
 
   if (m.includes("failed to fetch") || m.includes("networkerror")) {
-    return `No se pudo contactar al almacenamiento. Suele ser porque falta crear el bucket ${bucket}: corré supabase/006-bucket-santerra.sql.`;
+    return "El navegador no pudo completar la petición. Suele ser un problema de CORS en el gateway de Supabase, no del bucket. Revisá la pestaña Red de las herramientas del navegador.";
   }
   if (m.includes("bucket not found")) {
     return `El bucket ${bucket} no existe. Corré supabase/006-bucket-santerra.sql.`;

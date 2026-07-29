@@ -9,6 +9,7 @@ import {
   isSupabaseConfigured,
   rutaDeArchivo
 } from "@/lib/supabase/config";
+import { subirArchivo } from "@/lib/supabase/upload";
 import { esUrlDeMapsPermitida, extraerCoordenadas } from "@/lib/maps";
 import AdminSelect from "../AdminSelect";
 import FileButton from "../FileButton";
@@ -221,17 +222,14 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         `${crypto.randomUUID()}.${ext}`
       );
 
-      const { error: upErr } = await supabase.storage
-        .from(PROPERTY_IMAGES_BUCKET)
-        .upload(path, file, { cacheControl: "31536000", upsert: false });
+      const res = await subirArchivo(supabase, PROPERTY_IMAGES_BUCKET, path, file);
 
-      if (upErr) {
-        setError(`No se pudo subir ${file.name}. ${explicarErrorDeSubida(upErr.message)}`);
+      if ("error" in res) {
+        setError(`No se pudo subir ${file.name}. ${explicarErrorDeSubida(res.error)}`);
         break;
       }
 
-      const { data } = supabase.storage.from(PROPERTY_IMAGES_BUCKET).getPublicUrl(path);
-      subidas.push(data.publicUrl);
+      subidas.push(res.url);
     }
 
     if (subidas.length) {

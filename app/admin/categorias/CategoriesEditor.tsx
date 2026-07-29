@@ -11,6 +11,7 @@ import {
 import type { Category } from "@/lib/supabase/queries";
 import FileButton from "../FileButton";
 import { explicarErrorDeSubida } from "../errores";
+import { subirArchivo } from "@/lib/supabase/upload";
 
 const label = "mb-2 block text-[11px] uppercase tracking-[0.22em] text-santerra-gray-mid";
 const field =
@@ -96,18 +97,15 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
 
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = rutaDeArchivo("categorias", `${c.slug}-${crypto.randomUUID()}.${ext}`);
-    const { error: upErr } = await supabase()
-      .storage.from(PROPERTY_IMAGES_BUCKET)
-      .upload(path, file, { cacheControl: "31536000" });
+    const res = await subirArchivo(supabase(), PROPERTY_IMAGES_BUCKET, path, file);
 
-    if (upErr) {
+    if ("error" in res) {
       setBusy(null);
-      setError(explicarErrorDeSubida(upErr.message));
+      setError(explicarErrorDeSubida(res.error));
       return;
     }
 
-    const { data } = supabase().storage.from(PROPERTY_IMAGES_BUCKET).getPublicUrl(path);
-    setCats((prev) => prev.map((x) => (x.id === c.id ? { ...x, image: data.publicUrl } : x)));
+    setCats((prev) => prev.map((x) => (x.id === c.id ? { ...x, image: res.url } : x)));
     setBusy(null);
   }
 
