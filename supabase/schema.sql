@@ -1,11 +1,18 @@
 -- ============================================================
 -- Santerra Negocios Inmobiliarios — esquema de la base
 -- Ejecutar una sola vez en el SQL Editor de Supabase.
+--
+-- IMPORTANTE: despues de correr esto hay que exponer el schema en
+-- Project Settings -> API -> Data API -> Exposed schemas,
+-- agregando "santerra" a la lista. Sin ese paso la API devuelve
+-- "The schema must be one of the following: public".
 -- ============================================================
+
+create schema if not exists santerra;
 
 -- ---------- Tablas ----------
 
-create table if not exists public.categories (
+create table if not exists santerra.categories (
   id          uuid primary key default gen_random_uuid(),
   slug        text not null unique,
   title       text not null,
@@ -14,7 +21,7 @@ create table if not exists public.categories (
   created_at  timestamptz not null default now()
 );
 
-create table if not exists public.properties (
+create table if not exists santerra.properties (
   id          text primary key,
   title       text not null,
   location    text not null,
@@ -36,54 +43,67 @@ create table if not exists public.properties (
   updated_at  timestamptz not null default now()
 );
 
-create index if not exists properties_type_idx      on public.properties (type);
-create index if not exists properties_operation_idx on public.properties (operation);
-create index if not exists properties_city_idx      on public.properties (city);
+create index if not exists properties_type_idx      on santerra.properties (type);
+create index if not exists properties_operation_idx on santerra.properties (operation);
+create index if not exists properties_city_idx      on santerra.properties (city);
 
 -- updated_at automatico
-create or replace function public.touch_updated_at()
+create or replace function santerra.touch_updated_at()
 returns trigger language plpgsql as $$
 begin
   new.updated_at = now();
   return new;
 end $$;
 
-drop trigger if exists properties_touch_updated_at on public.properties;
+drop trigger if exists properties_touch_updated_at on santerra.properties;
 create trigger properties_touch_updated_at
-  before update on public.properties
-  for each row execute function public.touch_updated_at();
+  before update on santerra.properties
+  for each row execute function santerra.touch_updated_at();
+
+-- ---------- Permisos del schema ----------
+-- Necesarios para que PostgREST pueda ver el schema. El control fino
+-- lo hacen las politicas RLS de mas abajo.
+
+grant usage on schema santerra to anon, authenticated, service_role;
+
+grant select on all tables in schema santerra to anon;
+grant all    on all tables in schema santerra to authenticated, service_role;
+
+alter default privileges in schema santerra grant select on tables to anon;
+alter default privileges in schema santerra grant all    on tables to authenticated, service_role;
 
 -- ---------- Seguridad ----------
 -- Lectura publica (el sitio la usa sin sesion), escritura solo autenticados.
 
-alter table public.properties enable row level security;
-alter table public.categories enable row level security;
+alter table santerra.properties enable row level security;
+alter table santerra.categories enable row level security;
 
-drop policy if exists "properties lectura publica" on public.properties;
+drop policy if exists "properties lectura publica" on santerra.properties;
 create policy "properties lectura publica"
-  on public.properties for select
+  on santerra.properties for select
   to anon, authenticated
   using (published = true or auth.role() = 'authenticated');
 
-drop policy if exists "properties escritura autenticada" on public.properties;
+drop policy if exists "properties escritura autenticada" on santerra.properties;
 create policy "properties escritura autenticada"
-  on public.properties for all
+  on santerra.properties for all
   to authenticated
   using (true) with check (true);
 
-drop policy if exists "categories lectura publica" on public.categories;
+drop policy if exists "categories lectura publica" on santerra.categories;
 create policy "categories lectura publica"
-  on public.categories for select
+  on santerra.categories for select
   to anon, authenticated
   using (true);
 
-drop policy if exists "categories escritura autenticada" on public.categories;
+drop policy if exists "categories escritura autenticada" on santerra.categories;
 create policy "categories escritura autenticada"
-  on public.categories for all
+  on santerra.categories for all
   to authenticated
   using (true) with check (true);
 
 -- ---------- Storage de imagenes ----------
+-- El storage vive siempre en el schema "storage", no se mueve.
 
 insert into storage.buckets (id, name, public)
 values ('property-images', 'property-images', true)
@@ -109,14 +129,14 @@ create policy "imagenes borrado autenticado"
 
 -- ---------- Datos iniciales ----------
 
-insert into public.categories (slug, title, image, sort_order) values
+insert into santerra.categories (slug, title, image, sort_order) values
   ('casas',        'Casas',        '/images/property-1.png', 1),
   ('departamentos','Departamentos','/images/property-2.png', 2),
   ('terrenos',     'Terrenos',     '/images/property-3.png', 3),
   ('comerciales',  'Comerciales',  '/images/property-1.png', 4)
 on conflict (slug) do nothing;
 
-insert into public.properties
+insert into santerra.properties
   (id, title, location, city, beds, baths, area, price, operation, type, image, gallery, description, features, lat, lng)
 values
   ('residencia-san-bernardino', 'Residencia en San Bernardino', 'San Bernardino, Cordillera', 'San Bernardino',

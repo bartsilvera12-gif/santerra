@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
+import { DB_SCHEMA, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config";
 
 /**
  * Cliente de Supabase para Server Components y Route Handlers.
@@ -10,6 +10,7 @@ export function createClient() {
   const cookieStore = cookies();
 
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    db: { schema: DB_SCHEMA },
     cookies: {
       getAll() {
         return cookieStore.getAll();
