@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { PROPERTY_IMAGES_BUCKET, isSupabaseConfigured } from "@/lib/supabase/config";
 import type { Category } from "@/lib/supabase/queries";
 import FileButton from "../FileButton";
+import { explicarErrorDeSubida } from "../errores";
 
 const label = "mb-2 block text-[11px] uppercase tracking-[0.22em] text-santerra-gray-mid";
 const field =
@@ -97,7 +98,7 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
 
     if (upErr) {
       setBusy(null);
-      setError(upErr.message);
+      setError(explicarErrorDeSubida(upErr.message));
       return;
     }
 

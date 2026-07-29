@@ -9,6 +9,7 @@ import { esUrlDeMapsPermitida, extraerCoordenadas } from "@/lib/maps";
 import AdminSelect from "../AdminSelect";
 import FileButton from "../FileButton";
 import NumberField from "../NumberField";
+import { explicarErrorDeSubida } from "../errores";
 
 const OPERACIONES = ["VENTA", "ALQUILER"] as const;
 const TIPOS = ["Casa", "Departamento", "Terreno", "Comercial"] as const;
@@ -186,7 +187,7 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         .upload(path, file, { cacheControl: "31536000", upsert: false });
 
       if (upErr) {
-        setError(`No se pudo subir ${file.name}: ${upErr.message}`);
+        setError(`No se pudo subir ${file.name}. ${explicarErrorDeSubida(upErr.message)}`);
         break;
       }
 
