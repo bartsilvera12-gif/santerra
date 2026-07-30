@@ -14,6 +14,7 @@ import { esUrlDeMapsPermitida, extraerCoordenadas } from "@/lib/maps";
 import AdminSelect from "../AdminSelect";
 import FileButton from "../FileButton";
 import NumberField from "../NumberField";
+import PriceField from "../PriceField";
 import { explicarErrorDeSubida } from "../errores";
 
 const OPERACIONES = ["VENTA", "ALQUILER"] as const;
@@ -371,10 +372,10 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
           </div>
           <div>
             <label className={label}>Precio</label>
-            <input
+            <PriceField
               required
               value={p.price}
-              onChange={(e) => set("price", e.target.value)}
+              onChange={(v) => set("price", v)}
               className={field}
               placeholder="USD 690.000"
             />
