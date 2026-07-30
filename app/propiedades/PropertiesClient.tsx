@@ -10,6 +10,7 @@ import WhatsAppFloat from "@/components/WhatsAppFloat";
 import PageHero from "@/components/PageHero";
 import PropertyCard from "@/components/PropertyCard";
 import type { Property } from "@/lib/properties";
+import { usePropiedades } from "@/lib/supabase/useLiveData";
 import { fadeUp, viewportOnce } from "@/lib/animations";
 
 const PropertiesMap = dynamic(() => import("@/components/PropertiesMap"), {
@@ -49,14 +50,18 @@ export default function PropertiesClient({ properties }: { properties: Property[
   const [op, setOp] = useState<(typeof OPS)[number]>(normalizeOp(initialOp));
   const [q, setQ] = useState(initialUbi);
 
+  // Los datos del build se refrescan al cargar, asi aparecen las propiedades
+  // cargadas despues de la ultima publicacion.
+  const items = usePropiedades(properties);
+
   const filtered = useMemo(() => {
-    return properties.filter((p) => {
+    return items.filter((p) => {
       if (tipo !== "Todas" && p.type !== tipo) return false;
       if (op !== "Todas" && p.operation !== op) return false;
       if (q && !`${p.title} ${p.location}`.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [properties, tipo, op, q]);
+  }, [items, tipo, op, q]);
 
   return (
     <main>

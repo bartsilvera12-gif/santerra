@@ -3,9 +3,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { EASE } from "@/lib/animations";
+import { linkWhatsApp, useAjustes } from "@/lib/settings";
 
 export default function WhatsAppFloat() {
   const [hidden, setHidden] = useState(false);
+  const ajustes = useAjustes();
 
   useEffect(() => {
     const update = () => {
@@ -28,7 +30,7 @@ export default function WhatsAppFloat() {
     <AnimatePresence>
       {!hidden && (
         <motion.a
-          href="https://wa.me/595981401909"
+          href={linkWhatsApp(ajustes.whatsapp)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Escribinos por WhatsApp"

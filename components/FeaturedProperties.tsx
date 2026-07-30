@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { fadeUp, staggerCards, viewportOnce, EASE } from "@/lib/animations";
 import type { Property } from "@/lib/properties";
+import { usePropiedades } from "@/lib/supabase/useLiveData";
 
 function Card({ p, index }: { p: Property; index: number }) {
   return (
@@ -62,7 +63,12 @@ function Card({ p, index }: { p: Property; index: number }) {
 }
 
 export default function FeaturedProperties({ properties }: { properties: Property[] }) {
-  const items = properties.slice(0, 5);
+  const todas = usePropiedades(properties);
+
+  // Se muestran las marcadas como destacadas. Si no hay ninguna, se cae a las
+  // ultimas cargadas para que la seccion nunca quede vacia.
+  const destacadas = todas.filter((p) => p.featured);
+  const items = (destacadas.length > 0 ? destacadas : todas).slice(0, 5);
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
 

@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { fadeUp, viewportOnce, EASE } from "@/lib/animations";
+import { useAjustes } from "@/lib/settings";
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
+  const ajustes = useAjustes();
 
   return (
     <section id="contacto" className="bg-santerra-graphite text-white py-20 md:py-28">
@@ -36,7 +38,9 @@ export default function Contact() {
               </span>
               <div>
                 <div className="text-white/50 text-[11px] tracking-[0.2em] uppercase">Teléfono</div>
-                <a href="tel:+595981401909" className="hover:text-santerra-red transition">0981 401 909</a>
+                <a href={`tel:${ajustes.phone_e164}`} className="hover:text-santerra-red transition">
+                  {ajustes.phone}
+                </a>
               </div>
             </li>
             <li className="flex items-start gap-4">
@@ -45,16 +49,9 @@ export default function Contact() {
               </span>
               <div>
                 <div className="text-white/50 text-[11px] tracking-[0.2em] uppercase">Email</div>
-                <a href="mailto:hola@santerra.com.py" className="hover:text-santerra-red transition">hola@santerra.com.py</a>
-              </div>
-            </li>
-            <li className="flex items-start gap-4">
-              <span className="w-8 h-8 shrink-0 border border-santerra-red text-santerra-red flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-              </span>
-              <div>
-                <div className="text-white/50 text-[11px] tracking-[0.2em] uppercase">Oficina</div>
-                <span>Asunción, Paraguay</span>
+                <a href={`mailto:${ajustes.email}`} className="hover:text-santerra-red transition">
+                  {ajustes.email}
+                </a>
               </div>
             </li>
           </motion.ul>

@@ -1,23 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Property } from "@/lib/properties";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import AdminSelect from "../AdminSelect";
+import Confirmar from "../Confirmar";
 
 export default function PropertiesTable({ items }: { items: Property[] }) {
-  const router = useRouter();
   const [q, setQ] = useState("");
   const [op, setOp] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [porBorrar, setPorBorrar] = useState<Property | null>(null);
+
+  // La lista se mantiene en estado propio: en el sitio estatico no hay
+  // servidor que re-renderice, asi que router.refresh() no haria nada y los
+  // cambios no se verian hasta recargar a mano.
+  const [lista, setLista] = useState(items);
+  useEffect(() => setLista(items), [items]);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return items.filter((p) => {
+    return lista.filter((p) => {
       if (op && p.operation !== op) return false;
       if (!term) return true;
       return (
@@ -26,22 +32,65 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
         p.city.toLowerCase().includes(term)
       );
     });
-  }, [items, q, op]);
+  }, [lista, q, op]);
 
-  async function remove(p: Property) {
-    if (!confirm(`¿Borrar "${p.title}"? Esta acción no se puede deshacer.`)) return;
-
+  async function borrar(p: Property) {
     setError(null);
     setBusyId(p.id);
+
     const supabase = createClient();
-    const { error } = await supabase.from("properties").delete().eq("id", p.id);
+    // El .select() es necesario: sin el, cuando RLS bloquea el borrado
+    // PostgREST responde "todo bien" con cero filas afectadas, y la propiedad
+    // parece borrarse aunque siga en la base.
+    const { data, error } = await supabase
+      .from("properties")
+      .delete()
+      .eq("id", p.id)
+      .select("id");
+
+    setBusyId(null);
+    setPorBorrar(null);
+
+    if (error) {
+      setError(`No se pudo borrar: ${error.message}`);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      setError(
+        "No se borró ninguna fila. Tu usuario no tiene permiso: revisá que el correo esté en santerra.is_admin()."
+      );
+      return;
+    }
+
+    setLista((prev) => prev.filter((x) => x.id !== p.id));
+  }
+
+  async function alternarDestacada(p: Property) {
+    setError(null);
+    setBusyId(p.id);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("properties")
+      .update({ featured: !p.featured })
+      .eq("id", p.id)
+      .select("id");
+
     setBusyId(null);
 
     if (error) {
-      setError(error.message);
+      setError(`No se pudo cambiar: ${error.message}`);
       return;
     }
-    router.refresh();
+    if (!data || data.length === 0) {
+      setError("No se actualizó ninguna fila. Revisá los permisos de tu usuario.");
+      return;
+    }
+
+    setLista((prev) =>
+      prev.map((x) => (x.id === p.id ? { ...x, featured: !p.featured } : x))
+    );
   }
 
   return (
@@ -85,6 +134,7 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
               <th className="px-5 py-4 font-normal">Tipo</th>
               <th className="px-5 py-4 font-normal">Operación</th>
               <th className="px-5 py-4 font-normal">Precio</th>
+              <th className="px-5 py-4 text-center font-normal">Destacada</th>
               <th className="px-5 py-4 font-normal" />
             </tr>
           </thead>
@@ -119,6 +169,32 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
                   </span>
                 </td>
                 <td className="px-5 py-4 text-santerra-graphite">{p.price}</td>
+                <td className="px-5 py-4 text-center">
+                  <button
+                    onClick={() => alternarDestacada(p)}
+                    disabled={busyId === p.id || !isSupabaseConfigured}
+                    aria-pressed={Boolean(p.featured)}
+                    title={p.featured ? "Quitar de destacadas" : "Marcar como destacada"}
+                    className={`transition disabled:opacity-40 ${
+                      p.featured
+                        ? "text-santerra-red"
+                        : "text-santerra-gray-line hover:text-santerra-gray-mid"
+                    }`}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill={p.featured ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m12 3.5 2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 17.1 6.5 20.2l1.3-6.1L3.2 9.9l6.2-.7z" />
+                    </svg>
+                  </button>
+                </td>
                 <td className="px-5 py-4">
                   <div className="flex justify-end gap-4 text-[12px] uppercase tracking-[0.16em]">
                     <Link
@@ -128,7 +204,7 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
                       Editar
                     </Link>
                     <button
-                      onClick={() => remove(p)}
+                      onClick={() => setPorBorrar(p)}
                       disabled={busyId === p.id || !isSupabaseConfigured}
                       className="text-santerra-gray-mid transition hover:text-santerra-red disabled:opacity-40"
                     >
@@ -141,7 +217,7 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
 
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-16 text-center text-santerra-gray-mid">
+                <td colSpan={6} className="px-5 py-16 text-center text-santerra-gray-mid">
                   No hay propiedades que coincidan con la búsqueda.
                 </td>
               </tr>
@@ -151,8 +227,17 @@ export default function PropertiesTable({ items }: { items: Property[] }) {
       </div>
 
       <p className="mt-4 text-[12px] text-santerra-gray-mid">
-        {filtered.length} de {items.length} propiedades
+        {filtered.length} de {lista.length} propiedades
       </p>
+
+      <Confirmar
+        abierto={porBorrar !== null}
+        titulo={`¿Borrar “${porBorrar?.title ?? ""}”?`}
+        detalle="La propiedad y sus datos se eliminan de la base. Esta acción no se puede deshacer."
+        trabajando={busyId !== null && busyId === porBorrar?.id}
+        onCancelar={() => setPorBorrar(null)}
+        onConfirmar={() => porBorrar && borrar(porBorrar)}
+      />
     </div>
   );
 }

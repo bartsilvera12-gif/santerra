@@ -12,6 +12,7 @@ import type { Category } from "@/lib/supabase/queries";
 import FileButton from "../FileButton";
 import { explicarErrorDeSubida } from "../errores";
 import { subirArchivo } from "@/lib/supabase/upload";
+import Confirmar from "../Confirmar";
 
 const label = "mb-2 block text-[11px] uppercase tracking-[0.22em] text-santerra-gray-mid";
 const field =
@@ -31,6 +32,7 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
   const [cats, setCats] = useState(initial);
   const [nuevo, setNuevo] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [porBorrar, setPorBorrar] = useState<Category | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const supabase = () => createClient();
@@ -81,13 +83,30 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
 
   async function borrar(c: Category) {
     if (!guard()) return;
-    if (!confirm(`¿Borrar la categoría "${c.title}"?`)) return;
     setError(null);
     setBusy(c.id);
-    const { error } = await supabase().from("categories").delete().eq("id", c.id);
+
+    // Con .select() se distingue el borrado real de un rechazo silencioso de
+    // RLS, que responde sin error pero sin filas afectadas.
+    const { data, error } = await supabase()
+      .from("categories")
+      .delete()
+      .eq("id", c.id)
+      .select("id");
+
     setBusy(null);
-    if (error) setError(error.message);
-    else router.refresh();
+    setPorBorrar(null);
+
+    if (error) {
+      setError(`No se pudo borrar: ${error.message}`);
+      return;
+    }
+    if (!data || data.length === 0) {
+      setError("No se borró ninguna fila. Revisá los permisos de tu usuario.");
+      return;
+    }
+
+    setCats((prev) => prev.filter((x) => x.id !== c.id));
   }
 
   async function subirImagen(c: Category, file: File | null) {
@@ -172,7 +191,7 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
                   {busy === c.id ? "Guardando…" : "Guardar"}
                 </button>
                 <button
-                  onClick={() => borrar(c)}
+                  onClick={() => setPorBorrar(c)}
                   disabled={busy === c.id}
                   className="text-santerra-gray-mid transition hover:text-santerra-red disabled:opacity-40"
                 >
@@ -199,6 +218,15 @@ export default function CategoriesEditor({ initial }: { initial: Category[] }) {
           {busy === "nuevo" ? "Agregando…" : "Agregar"}
         </button>
       </form>
+
+      <Confirmar
+        abierto={porBorrar !== null}
+        titulo={`¿Borrar la categoría “${porBorrar?.title ?? ""}”?`}
+        detalle="Deja de aparecer en la sección del inicio. Las propiedades no se tocan."
+        trabajando={busy !== null && busy === porBorrar?.id}
+        onCancelar={() => setPorBorrar(null)}
+        onConfirmar={() => porBorrar && borrar(porBorrar)}
+      />
     </div>
   );
 }

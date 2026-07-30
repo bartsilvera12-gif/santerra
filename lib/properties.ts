@@ -18,6 +18,8 @@ export type Property = {
   features: string[];
   lat: number;
   lng: number;
+  /** Aparece en la seccion Propiedades Destacadas del inicio. */
+  featured?: boolean;
 };
 
 export const properties: Property[] = [

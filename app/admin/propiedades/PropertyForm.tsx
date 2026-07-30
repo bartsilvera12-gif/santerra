@@ -268,7 +268,8 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
         .map((f) => f.trim())
         .filter(Boolean),
       lat: p.lat,
-      lng: p.lng
+      lng: p.lng,
+      featured: Boolean(p.featured)
     };
 
     const { error } = isEdit
@@ -379,6 +380,23 @@ export default function PropertyForm({ initial }: { initial?: Property }) {
             />
           </div>
         </div>
+
+        <label className="flex cursor-pointer items-start gap-3 border border-santerra-gray-line p-4 transition hover:border-santerra-gray-mid">
+          <input
+            type="checkbox"
+            checked={Boolean(p.featured)}
+            onChange={(e) => set("featured", e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#C52A42]"
+          />
+          <span>
+            <span className="block text-[13px] font-medium text-santerra-graphite">
+              Destacada
+            </span>
+            <span className="mt-1 block text-[12px] leading-relaxed text-santerra-gray-mid">
+              Aparece en la sección “Propiedades Destacadas” del inicio.
+            </span>
+          </span>
+        </label>
 
         <div>
           <label className={label}>Descripción</label>

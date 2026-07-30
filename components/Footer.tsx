@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { fadeUp, viewportOnce } from "@/lib/animations";
+import { useAjustes } from "@/lib/settings";
 
 const socials = [
   {
@@ -36,6 +37,16 @@ const socials = [
 ];
 
 export default function Footer() {
+  const ajustes = useAjustes();
+
+  // Solo se muestran las redes que tengan enlace cargado en el panel.
+  const redes = socials
+    .map((s) => ({
+      ...s,
+      href: (ajustes[s.label.toLowerCase() as "instagram" | "facebook" | "linkedin"] || "").trim()
+    }))
+    .filter((s) => s.href);
+
   return (
     <footer id="site-footer" className="bg-santerra-black text-white/80 pt-16 pb-10">
       <div className="max-w-[1320px] mx-auto px-5 md:px-10">
@@ -57,7 +68,7 @@ export default function Footer() {
             </p>
 
             <div className="mt-6 flex items-center gap-3">
-              {socials.map((s) => (
+              {redes.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
@@ -97,9 +108,17 @@ export default function Footer() {
           <motion.div variants={fadeUp}>
             <div className="text-[11px] tracking-[0.28em] uppercase text-white/50 mb-4">Contacto</div>
             <ul className="space-y-2 text-sm">
-              <li><a href="tel:+595981401909" className="hover:text-santerra-red transition">0981 401 909</a></li>
-              <li><a href="mailto:hola@santerra.com.py" className="hover:text-santerra-red transition">hola@santerra.com.py</a></li>
-              <li>Asunción, Paraguay</li>
+              <li>
+                <a href={`tel:${ajustes.phone_e164}`} className="hover:text-santerra-red transition">
+                  {ajustes.phone}
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${ajustes.email}`} className="hover:text-santerra-red transition">
+                  {ajustes.email}
+                </a>
+              </li>
+              {ajustes.address && <li>{ajustes.address}</li>}
             </ul>
           </motion.div>
         </motion.div>
